@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
+import { getModelInfo } from '../services/api';
 
 export default function ModelInspector() {
   const [modelInfo, setModelInfo] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/model/info')
-      .then(r => r.json())
+    getModelInfo()
       .then(data => { setModelInfo(data); setLoading(false); })
       .catch(() => setLoading(false));
   }, []);

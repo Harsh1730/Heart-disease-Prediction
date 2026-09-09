@@ -5,6 +5,8 @@ import AssessmentForm from './components/AssessmentForm';
 import ResultDashboard from './components/ResultDashboard';
 import BatchScreening from './components/BatchScreening';
 import ModelInspector from './components/ModelInspector';
+import TypewriterText from './components/TypewriterText';
+import api, { getPresets, predict } from './services/api';
 
 const initialFormData = {
   patientId: 'PT-' + Math.floor(1000 + Math.random() * 9000),
@@ -37,9 +39,9 @@ export default function App() {
     let isMounted = true;
     const checkHealth = async () => {
       try {
-        const r = await fetch('/api/model/info');
+        const r = await api.get('/model/info');
         if (isMounted) {
-          if (r.ok) {
+          if (r.status === 200) {
             setBackendOnline(true);
           } else {
             setBackendOnline(false);
@@ -65,9 +67,8 @@ export default function App() {
   // Fetch or re-fetch presets whenever backend is verified online
   useEffect(() => {
     if (backendOnline) {
-      fetch('/api/presets')
-        .then(r => { if (!r.ok) throw new Error(); return r.json(); })
-        .then(d => setPresets(d))
+      getPresets()
+        .then(data => setPresets(data))
         .catch(() => {});
     } else {
       setPresets([]);
@@ -98,20 +99,16 @@ export default function App() {
     setLoading(true);
     setErrorMsg(null);
     try {
-      const res = await fetch('/api/predict', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-      if (!res.ok) {
-        throw new Error(`Inference service unavailable (HTTP ${res.status}). Ensure the Spring Boot backend is running on port 8080.`);
-      }
-      const json = await res.json();
+      const json = await predict(data);
       setResult(json);
       setErrorMsg(null);
     } catch (err) {
       setResult(null);
-      setErrorMsg(err.message || 'Inference engine unavailable. Ensure the Spring Boot service is running on port 8080.');
+      const statusText = err.response ? `HTTP ${err.response.status}` : 'offline';
+      setErrorMsg(
+        err.response?.data?.message ||
+        `Inference service unavailable (${statusText}). Ensure the Spring Boot backend is running on port 8080.`
+      );
     } finally {
       setLoading(false);
     }
@@ -135,7 +132,7 @@ export default function App() {
                     <div className="hero-overline">Cardio<span style={{ color: 'var(--ink)' }}>Guard</span> · Clinical Decision Support</div>
                     <h1 className="hero-headline">
                       Know Your<br />
-                      Heart's <em>Truth.</em>
+                      Heart's <TypewriterText />
                     </h1>
                     <p className="hero-deck">
                       Evidence-based cardiac risk assessment powered by a K-Nearest Neighbors inference engine

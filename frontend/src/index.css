@@ -366,6 +366,7 @@ body {
 }
 
 .hero-headline {
+  user-select: none;
   font-family: var(--font-display);
   font-size: clamp(2.2rem, 3.5vw, 3.6rem);
   font-weight: 900;
@@ -378,6 +379,41 @@ body {
 .hero-headline em {
   font-style: italic;
   color: var(--red);
+}
+
+.typewriter-container {
+  display: inline-flex;
+  align-items: baseline;
+  vertical-align: baseline;
+}
+
+.typewriter-word {
+  font-style: italic;
+  color: var(--red);
+}
+
+.typewriter-cursor {
+  display: inline-block;
+  width: 4px;
+  height: 0.85em;
+  background-color: var(--red);
+  margin-left: 4px;
+  transform: translateY(0.04em);
+  animation: typewriterBlink 0.85s step-start infinite;
+  border-radius: 1px;
+}
+
+@keyframes typewriterBlink {
+
+  0%,
+  50% {
+    opacity: 1;
+  }
+
+  50.1%,
+  100% {
+    opacity: 0;
+  }
 }
 
 .hero-deck {

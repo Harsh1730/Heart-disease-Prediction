@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Play, RotateCcw, AlertTriangle } from 'lucide-react';
+import { Play, AlertTriangle } from 'lucide-react';
+import { predictBatch } from '../services/api';
 
 const SAMPLE_PATIENTS = [
   { patientId: 'COHORT-101', patientName: 'Sarah Jenkins',  age: 48, sex: 'F', chestPainType: 'ATA', restingBP: 120, cholesterol: 195, fastingBS: 0, restingECG: 'Normal', maxHR: 165, exerciseAngina: 'N', oldpeak: 0.0, stSlope: 'Up' },
@@ -29,18 +30,15 @@ export default function BatchScreening({ backendOnline }) {
     setLoading(true);
     setErrorMsg(null);
     try {
-      const res = await fetch('/api/predict/batch', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ patients: SAMPLE_PATIENTS }),
-      });
-      if (!res.ok) {
-        throw new Error(`Inference service unavailable (HTTP ${res.status}). Ensure the Spring Boot backend is active on port 8080.`);
-      }
-      setBatchResponse(await res.json());
+      const data = await predictBatch(SAMPLE_PATIENTS);
+      setBatchResponse(data);
     } catch (err) {
       setBatchResponse(null);
-      setErrorMsg(err.message || 'Inference engine unavailable. Unable to score cohort batch.');
+      const statusText = err.response ? `HTTP ${err.response.status}` : 'offline';
+      setErrorMsg(
+        err.response?.data?.message ||
+        `Inference service unavailable (${statusText}). Ensure the Spring Boot backend is active on port 8080.`
+      );
     } finally {
       setLoading(false);
     }
